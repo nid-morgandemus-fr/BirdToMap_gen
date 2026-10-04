@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="title">Protocole Amateur d'Écoute Ornithologique</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- 1. Feuilles de style CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- html2canvas pour l'export de la carte -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Leaflet JS (DOIT ÊTRE CHARGÉ AVANT LE GEOCODER) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Control Geocoder JS (DÉPEND DE LEAFLET) -->
+    <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
+    
+    <!-- jsPDF et AutoTable pour l'export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1><i class="fas fa-dove"></i> <span data-i18n="title">Protocole Amateur d'Écoute</span></h1>
+                <p data-i18n="subtitle">Configuration de votre carré d'étude naturaliste</p>
+            </div>
+            <div class="header-controls">
+                <button class="btn-help" onclick="openHelp()" title="Aide / Help">
+                    <i class="fas fa-question-circle"></i>
+                    <span data-i18n="help">Aide</span>
+                </button>
+                <div class="lang-selector">
+                    <button class="lang-btn active" onclick="changeLanguage('fr')" title="Français">FR</button>
+                    <button class="lang-btn" onclick="changeLanguage('en')" title="English">EN</button>
+                    <button class="lang-btn" onclick="changeLanguage('de')" title="Deutsch">DE</button>
+                    <button class="lang-btn" onclick="changeLanguage('ru')" title="Русский">RU</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-grid">
+            <!-- Panneau Gauche : Configuration -->
+            <div class="left-panel">
+                <div class="panel">
+                    <h2 class="panel-title">
+                        <i class="fas fa-cog"></i>
+                        <span data-i18n="sessionConfig">Configuration de la Session</span>
+                    </h2>
+
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        <span data-i18n="mapInfo">Cliquez sur la carte pour positionner le centre de votre carré d'étude.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="siteName" data-i18n="siteName">Nom du site / lieu-dit</label>
+                        <input type="text" id="siteName" data-i18n="sitePlaceholder" placeholder="Ex: Étang des Roseaux">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="observerName" data-i18n="observer">Observateur (Amateur)</label>
+                            <input type="text" id="observerName" data-i18n="observerPlaceholder" placeholder="Votre nom">
+                        </div>
+                        <div class="form-group">
+                            <label for="surveyDate" data-i18n="sessionDate">Date de la session</label>
+                            <input type="date" id="surveyDate">
+                        </div>
+                    </div>
+
+                    <div class="square-config">
+                        <label for="squareSize" data-i18n="squareDimension">Dimension du côté du carré d'étude (km)</label>
+                        <input type="number" id="squareSize" value="2" min="0.1" max="50" step="0.1" oninput="updateSquareSize()">
+                        <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 4px;" data-i18n="squareExample">
+                            Ex: 1.5 pour un carré de 1,5 km × 1,5 km (2,25 km²)
+                        </small>
+
+                        <div class="square-info">
+                            <div class="square-info-item">
+                                <div class="square-info-label" data-i18n="centerCoords">Coordonnées du centre</div>
+                                <div id="centerCoords" data-i18n="clickMap">Cliquez sur la carte</div>
+                            </div>
+                            <div class="square-info-item">
+                                <div class="square-info-label" data-i18n="totalArea">Surface totale</div>
+                                <div id="squareArea">4 km²</div>
+                            </div>
+                        </div>
+                    </div>
+
+					<div class="form-group">
+						<label for="pdfLines" data-i18n="pdfLines">Nombre de lignes à imprimer dans la fiche PDF</label>
+						<div class="lines-input-wrapper">
+							<button class="lines-btn" onclick="adjustLines(-1)" title="Moins de lignes">
+								<i class="fas fa-minus"></i>
+							</button>
+							<input type="number" id="pdfLines" value="15" min="1" max="100" step="1" oninput="validateLines()">
+							<button class="lines-btn" onclick="adjustLines(1)" title="Plus de lignes">
+								<i class="fas fa-plus"></i>
+							</button>
+						</div>
+						<small style="color: #666; font-size: 0.8rem;" data-i18n="pdfInfo">Le tableau sera vierge dans le PDF pour un remplissage manuel sur le terrain.</small>
+					</div>
+
+                    <div class="form-group">
+                        <label for="notes" data-i18n="prepNotes">Notes générales de préparation</label>
+                        <textarea id="notes" rows="3" data-i18n="notesPlaceholder" placeholder="Matériel spécifique, accès au site, consignes personnelles..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panneau Droit : Carte et Export -->
+            <div class="right-panel">
+                
+                <!-- Sélecteur de mode -->
+<div class="mode-selector">
+    <div class="mode-title">
+        <i class="fas fa-sliders-h"></i>
+        <span data-i18n="modeTitle">Mode de la carte</span>
+    </div>
+    <div class="mode-buttons">
+        <button class="mode-btn active" id="modeSquareBtn" onclick="setMapMode('square')">
+            <i class="fas fa-vector-square"></i>
+            <span data-i18n="modeSquare">Déplacer le carré</span>
+        </button>
+        <button class="mode-btn" id="modePointsBtn" onclick="setMapMode('points')">
+            <i class="fas fa-map-marker-alt"></i>
+            <span data-i18n="modePoints">Ajouter des points</span>
+        </button>
+    </div>
+    <div class="mode-description" id="modeDescription" data-i18n="modeSquareDesc">
+        Cliquez pour repositionner le centre du carré d'étude
+    </div>
+</div>
+                
+                <!-- Conteneur de la carte -->
+                <div class="map-container" id="mapContainer">
+                    <div id="map"></div>
+                    <div class="map-controls">
+                        <button class="map-control-btn active" onclick="changeBaseMap('osm')" title="OpenStreetMap">
+                            <i class="fas fa-map"></i>
+                        </button>
+                        <button class="map-control-btn" onclick="changeBaseMap('topo')" title="OpenTopoMap">
+                            <i class="fas fa-mountain"></i>
+                        </button>
+                        <button class="map-control-btn" onclick="resetView()" title="Recentrer">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Points d'écoute -->
+                <div class="listening-points-panel" style="margin-top: 1rem;">
+                    <h2 class="panel-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span data-i18n="listeningPoints">Points d'écoute</span>
+                    </h2>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem; color: #555;" data-i18n="listeningPointsDesc">
+                        Cliquez sur la carte pour ajouter un point d'écoute, ou ajoutez-le manuellement ci-dessous.
+                    </p>
+                    
+                    <div class="add-point-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="latitude">Latitude</label>
+                                <input type="number" id="pointLat" step="0.000001" placeholder="46.123456">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="longitude">Longitude</label>
+                                <input type="number" id="pointLng" step="0.000001" placeholder="1.123456">
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="addPointFromCoords()" style="width: 100%; margin-bottom: 1rem;">
+                            <i class="fas fa-plus"></i> <span data-i18n="addPoint">Ajouter le point</span>
+                        </button>
+                    </div>
+                    
+                    <div class="points-list" id="pointsList">
+                    </div>
+                </div>
+
+                <!-- Conseil naturaliste -->
+                <div class="info-box compact" style="margin-top: 1rem;">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong data-i18n="naturalistTip">Conseil naturaliste :</strong>
+                    <span data-i18n="naturalistText">Imprimez le PDF généré. Utilisez-le sur le terrain pour noter les heures d'écoute et les indices (chants, cris). Vous pourrez ensuite dérusher les enregistrements audio sur ordinateur pour confirmer l'identification des espèces avec un niveau de certitude élevé.</span>
+                </div>
+
+                <!-- Bouton Export PDF -->
+                <div class="export-panel">
+                    <h2 class="panel-title">
+                        <i class="fas fa-file-pdf"></i>
+                        <span data-i18n="exportTitle">Export du Protocole</span>
+                    </h2>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem; color: #555;" data-i18n="exportDesc">
+                        Générez une fiche PDF complète incluant la carte, les infos du site, les points d'écoute et une page dédiée vierge pour vos relevés de terrain.
+                    </p>
+                    <button class="btn btn-primary btn-export" onclick="generatePDF()" style="width: 100%;">
+                        <i class="fas fa-download"></i>
+                        <span data-i18n="downloadPDF">Télécharger la fiche PDF</span>
+                    </button>
+                </div>
+
+            </div> <!-- Fin right-panel -->
+        </div> <!-- Fin main-grid -->
+    </div> <!-- Fin container -->
+
+    <!-- Overlay de chargement -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p data-i18n="generating">Génération de votre fiche naturaliste...</p>
+    </div>
+
+    <!-- Footer & crédits -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>
+                    <i class="fas fa-music"></i> 
+                    Favicon by 
+                    <a href="https://www.flaticon.com/free-icons/bird" title="bird icons" target="_blank" rel="noopener">
+                        Magnific - Flaticon
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de l'application (chargés après toutes les dépendances) -->
+    <script src="translations.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
