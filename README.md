@@ -4,7 +4,7 @@
 
 **BirdToMap** is a free, open-source web application designed for amateur audio-naturalists and birdwatchers who want to structure their field listening sessions. It allows you to define a study square on a map, place listening points, and generate a printable PDF field sheet for recording bird observations.
 
-###  AI-Assisted Development
+### 🧠 AI-Assisted Development
 
 This software was designed and developed with the assistance of Qwen 3.7.
 
@@ -47,7 +47,7 @@ However, BirdToMap is **NOT** a scientific protocol. It is a simplified, amateur
 
 ### 🌍 Translations
 
-BirdToMap supports **4 languages**: 🇫🇷 French, 🇧 English, 🇩 German, 🇷🇺 Russian.
+BirdToMap supports **4 languages**: 🇫🇷 French, 🇬🇧 English, 🇩 German, 🇷🇺 Russian.
 
 #### Why translations matter
 
@@ -65,7 +65,7 @@ Birdwatching is a global activity. To make this tool accessible to as many amate
 
 ---
 
-## 🇷 Version Française
+## 🇫🇷 Version Française
 
 ### 📖 À propos
 
@@ -94,7 +94,7 @@ Cependant, BirdToMap n'est **PAS** un protocole scientifique. C'est un outil sim
    - Choisissez la taille de votre carré d'étude (0,1 à 50 km de côté)
    - Cliquez sur la carte pour positionner le centre de votre carré
 
-2. ** Ajoutez des points d'écoute**
+2. **Ajoutez des points d'écoute**
    - Basculez en mode "Ajouter des points"
    - Cliquez sur la carte ou saisissez les coordonnées manuellement
    - Les points sont automatiquement numérotés
@@ -106,7 +106,7 @@ Cependant, BirdToMap n'est **PAS** un protocole scientifique. C'est un outil sim
      - 📝 Un tableau d'observation vierge (nombre de lignes personnalisable)
      - 📖 Un guide de l'observateur amateur
 
-4. ** Allez sur le terrain**
+4. **Allez sur le terrain**
    - Imprimez le PDF
    - Visitez chaque point d'écoute
    - Enregistrez l'audio et notez vos hypothèses
@@ -114,7 +114,7 @@ Cependant, BirdToMap n'est **PAS** un protocole scientifique. C'est un outil sim
 
 ### 🌍 Traductions
 
-BirdToMap supporte **4 langues** : 🇫 Français, 🇬🇧 Anglais, 🇪 Allemand, 🇷 Russe.
+BirdToMap supporte **4 langues** : 🇫🇷 Français, 🇬🇧 Anglais, 🇩 Allemand, 🇷🇺 Russe.
 
 #### Pourquoi les traductions sont importantes
 
@@ -145,6 +145,7 @@ L'observation des oiseaux est une activité mondiale. Pour rendre cet outil acce
 | 🔍 Leaflet Control Geocoder | Location search |
 
 ## 📁 Project Structure
+```
 BirdToMap/
 ├── index.html          # Main HTML file
 ├── style.css           # Stylesheet
@@ -154,3 +155,6 @@ BirdToMap/
 ├── start.sh            # Linux/macOS launcher (local server)
 ├── preview_1.jpg       # Screenshot preview
 └── README.md           # Help
+```
+
+![image info](./preview_1.jpg)
